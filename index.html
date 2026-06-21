@@ -78,6 +78,11 @@ textarea#q:focus{outline:none;border-color:var(--navy2)}
 .tip-box{background:linear-gradient(135deg,var(--navy),var(--navy2));border-radius:var(--r);padding:14px}
 .tip-box h3{color:var(--gold);font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:7px}
 .tip-box p{font-size:13px;line-height:1.6;color:rgba(255,255,255,.8)}
+.filters-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg label{font-size:12px;font-weight:600;color:var(--ink2)}
+.fg select{padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;background:var(--paper);color:var(--ink);transition:border-color .15s}
+.fg select:focus{outline:none;border-color:var(--navy2)}
 .empty{text-align:center;padding:48px 24px;color:var(--ink3)}
 .empty .ei{font-size:44px;margin-bottom:12px}
 .empty h2{font-size:19px;font-weight:700;color:var(--ink2);margin-bottom:7px}
@@ -115,18 +120,68 @@ textarea#q:focus{outline:none;border-color:var(--navy2)}
 <div class="main">
   <div>
     <div class="qcard">
-      <h2>🔍 חפש מידע עדכני על שוק העבודה</h2>
-      <div class="q-wrap">
-        <textarea id="q" placeholder="לדוגמה: אילו חברות מגייסות דוברי רוסית? מגמות תעסוקה 2025..."></textarea>
-        <button class="q-send" id="send-btn" onclick="askQuestion()">חפש ←</button>
+      <h2>🔍 חפש הזדמנויות תעסוקה</h2>
+      <div class="filters-grid">
+        <div class="fg">
+          <label>תחום מקצועי</label>
+          <select id="f-field">
+            <option value="">כל התחומים</option>
+            <option value="הייטק ותוכנה">הייטק / תוכנה</option>
+            <option value="פיננסים וכלכלה">פיננסים / כלכלה</option>
+            <option value="הנדסה">הנדסה</option>
+            <option value="רפואה ובריאות">בריאות / רפואה</option>
+            <option value="שיווק ומכירות">שיווק / מכירות</option>
+            <option value="משפטים">משפטים</option>
+            <option value="חינוך והוראה">חינוך</option>
+            <option value="לוגיסטיקה ושרשרת אספקה">לוגיסטיקה</option>
+            <option value="אדמיניסטרציה ומשרד">אדמין / משרד</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>מיקום</label>
+          <select id="f-location">
+            <option value="">כל הארץ</option>
+            <option value="תל אביב והמרכז">תל אביב / מרכז</option>
+            <option value="ירושלים">ירושלים</option>
+            <option value="חיפה והצפון">חיפה / צפון</option>
+            <option value="באר שבע והדרום">באר שבע / דרום</option>
+            <option value="עבודה מרחוק">עבודה מרחוק</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>שפה נדרשת</label>
+          <select id="f-lang">
+            <option value="">כל השפות</option>
+            <option value="דוברי רוסית">רוסית</option>
+            <option value="דוברי צרפתית">צרפתית</option>
+            <option value="דוברי אנגלית">אנגלית</option>
+            <option value="דוברי ספרדית">ספרדית</option>
+            <option value="דוברי ערבית">ערבית</option>
+            <option value="דוברי אמהרית">אמהרית</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label>סוג משרה</label>
+          <select id="f-type">
+            <option value="">כל הסוגים</option>
+            <option value="משרה מלאה">משרה מלאה</option>
+            <option value="משרה חלקית">משרה חלקית</option>
+            <option value="פרילנס">פרילנס</option>
+            <option value="התמחות סטאז">התמחות / סטאז׳</option>
+          </select>
+        </div>
       </div>
-      <div class="quick-qs">
-        <button class="qq" onclick="askQ(this)">חברות מגייסות דוברי רוסית 2025</button>
-        <button class="qq" onclick="askQ(this)">משרות הייטק לעולים ישראל</button>
-        <button class="qq" onclick="askQ(this)">שכר מהנדסים ישראל 2025</button>
-        <button class="qq" onclick="askQ(this)">הזדמנויות לרופאים עולים ישראל</button>
-        <button class="qq" onclick="askQ(this)">תכניות קליטה תעסוקתית עולים 2025</button>
-        <button class="qq" onclick="askQ(this)">חברות הייטק ידידותיות עולים</button>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="q-send" id="send-btn" onclick="searchByFilters()" style="flex:1;padding:11px">🔍 חפש הזדמנויות</button>
+        <button onclick="resetFilters()" style="padding:11px 16px;border:1px solid var(--border);border-radius:8px;background:var(--paper);color:var(--ink2);cursor:pointer;font-family:inherit;font-size:13px">✕ אפס</button>
+      </div>
+      <div class="quick-qs" style="margin-top:10px">
+        <span style="font-size:11px;color:var(--ink3);margin-left:4px">חיפושים נפוצים:</span>
+        <button class="qq" onclick="quickSearch('הייטק','תל אביב והמרכז','','')">הייטק TLV</button>
+        <button class="qq" onclick="quickSearch('רפואה ובריאות','','','')">רופאים עולים</button>
+        <button class="qq" onclick="quickSearch('','','דוברי רוסית','')">דוברי רוסית</button>
+        <button class="qq" onclick="quickSearch('','','דוברי צרפתית','')">דוברי צרפתית</button>
+        <button class="qq" onclick="quickSearch('','','','עבודה מרחוק')">עבודה מרחוק</button>
       </div>
     </div>
     <div class="results" id="results">
@@ -176,21 +231,42 @@ document.querySelector('.topics-bar').addEventListener('click',e=>{
   activeTopic=tp.dataset.topic;
 });
 
-document.getElementById('q').addEventListener('keydown',e=>{
-  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();askQuestion();}
-});
 
-function askQ(btn){document.getElementById('q').value=btn.textContent;askQuestion();}
 
-async function askQuestion(){
-  const q=document.getElementById('q').value.trim();
-  if(!q||isLoading)return;
-  document.getElementById('q').value='';
-  await runSearch(q,'question');
+function quickSearch(field, location, lang, type){
+  if(field) document.getElementById('f-field').value=field;
+  if(location) document.getElementById('f-location').value=location;
+  if(lang) document.getElementById('f-lang').value=lang;
+  if(type) document.getElementById('f-type').value=type;
+  searchByFilters();
+}
+
+function resetFilters(){
+  ['f-field','f-location','f-lang','f-type'].forEach(id=>document.getElementById(id).value='');
+}
+
+function searchByFilters(){
+  const field = document.getElementById('f-field').value;
+  const location = document.getElementById('f-location').value;
+  const lang = document.getElementById('f-lang').value;
+  const type = document.getElementById('f-type').value;
+  
+  if(!field && !location && !lang && !type){
+    refreshAll(); return;
+  }
+  
+  let query = 'הזדמנויות תעסוקה בישראל לעולים חדשים';
+  if(field) query += ' בתחום ' + field;
+  if(location) query += ' ב' + location;
+  if(lang) query += ' ' + lang;
+  if(type) query += ' ' + type;
+  query += ' 2025 גיוס משרות פתוחות';
+  
+  runSearch(query, 'search');
 }
 
 async function refreshAll(){
-  await runSearch(activeTopic+' מגמות גיוס חדשות 2025','refresh');
+  await runSearch(activeTopic+' הזדמנויות גיוס משרות פתוחות 2025','refresh');
 }
 
 async function runSearch(query,type){
