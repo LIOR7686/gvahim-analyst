@@ -3,645 +3,283 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>גבהים — אנליסט נתונים</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<title>גבהים — מכ"ם הזדמנויות</title>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;600;700;800&display=swap');
 :root{
-  --bg:#f5f4ef;--white:#fff;--border:#e2e0d8;--border2:#ccc9be;
-  --ink:#1c1c1a;--ink2:#4a4a45;--ink3:#8a8a82;--faint:#bbb;
-  --blue:#1e4fa8;--blue-lt:#e8eef8;--teal:#127a58;--teal-lt:#e4f4ec;
-  --coral:#c94028;--coral-lt:#faeae7;--amber:#a86010;--r:8px;
+  --navy:#0f1f3d;--navy2:#1a3260;--gold:#c8963c;--gold-lt:#f5e6cc;
+  --teal:#1a8c6e;--teal-lt:#d6f0e8;--coral:#c94028;--coral-lt:#faeae7;
+  --sky:#e8f0fb;--white:#fff;--paper:#f7f6f2;--border:#e2dfd6;
+  --ink:#1a1a18;--ink2:#4a4a45;--ink3:#8a8a82;--r:10px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;direction:rtl;font-size:15px}
-
-/* ══ UPLOAD ══ */
-#screen-upload{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px}
-.up-logo{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--blue);margin-bottom:32px}
-.up-card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:36px 40px;max-width:540px;width:100%}
-.up-card h1{font-size:22px;font-weight:700;margin-bottom:6px}
-.up-sub{font-size:14px;color:var(--ink2);margin-bottom:22px}
-.warn{background:#fff8e6;border:1px solid #f0c040;border-radius:var(--r);padding:14px 16px;margin-bottom:22px;display:flex;gap:10px}
-.warn-icon{font-size:20px;flex-shrink:0}
-.warn p{font-size:13px;color:#7a5800;line-height:1.5}
-.warn strong{font-weight:700;display:block;margin-bottom:2px}
-.dz{border:2px dashed var(--border2);border-radius:var(--r);padding:32px 20px;text-align:center;cursor:pointer;transition:all .15s;background:var(--bg);margin-bottom:10px}
-.dz:hover,.dz.drag{border-color:var(--blue);background:var(--blue-lt)}
-.dz input{display:none}
-.dz-icon{font-size:32px;margin-bottom:10px}
-.dz p{font-size:13px;color:var(--ink2)}
-.dz strong{color:var(--blue);cursor:pointer}
-.dz-hint{font-size:11px;color:var(--faint);margin-top:5px}
-.file-badge{display:inline-flex;align-items:center;gap:8px;background:var(--teal-lt);color:var(--teal);border-radius:6px;padding:7px 14px;font-size:13px;font-weight:600;margin-bottom:14px}
-.up-err{color:var(--coral);font-size:13px;margin-bottom:10px}
-.btn-go{width:100%;padding:13px;background:var(--blue);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:700;cursor:pointer;transition:background .15s}
-.btn-go:hover{background:#163d8a}
-.btn-go:disabled{background:var(--border2);cursor:not-allowed}
-
-/* ══ APP ══ */
-#screen-app{display:none;height:100vh;flex-direction:column;overflow:hidden}
-.topbar{height:52px;background:var(--white);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 16px;gap:10px;flex-shrink:0}
-.topbar-logo{font-size:13px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);flex-shrink:0}
-.topbar-file{font-size:12px;color:var(--ink3);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.topbar-rows{font-size:12px;color:var(--ink2);flex-shrink:0}
-.tb-btn{padding:6px 12px;border:1px solid var(--border2);border-radius:6px;background:var(--bg);color:var(--ink2);font-size:12px;cursor:pointer;flex-shrink:0;transition:all .12s;white-space:nowrap}
-.tb-btn:hover{background:var(--blue-lt);border-color:var(--blue);color:var(--blue)}
-.tb-btn.active{background:var(--blue);color:#fff;border-color:var(--blue)}
-
-/* ══ MODES ══ */
-.app-body{flex:1;overflow:hidden;display:flex;flex-direction:column}
-
-/* DASHBOARD */
-#mode-dashboard{display:none;overflow-y:auto;flex:1}
-.nav{display:flex;gap:0;background:var(--white);border-bottom:1px solid var(--border);padding:0 20px;overflow-x:auto;flex-shrink:0}
-.navbtn{padding:11px 16px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:none;color:var(--ink3);border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
-.navbtn.active{color:var(--blue);border-bottom-color:var(--blue)}
-.dash-content{padding:0}
-.metric-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;padding:16px 20px}
-.metric{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:14px 16px}
-.metric-lbl{font-size:11px;color:var(--ink3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
-.metric-val{font-size:26px;font-weight:700;color:var(--ink)}
-.metric-sub{font-size:11px;color:var(--faint);margin-top:3px}
-.metric.accent{border-color:var(--blue);background:linear-gradient(135deg,#e8eff9,#fff)}
-.metric.accent .metric-val{color:var(--blue)}
-.view{display:none;padding:16px 20px;flex-direction:column;gap:14px}
-.view.active{display:flex}
-.card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:16px}
-.card-title{font-size:12px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:12px}
-.row-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.chart-wrap{position:relative;width:100%}
-.note{font-size:11px;color:var(--faint);margin-top:8px;padding-top:7px;border-top:1px solid var(--border)}
-.filters{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
-.filters label{font-size:12px;color:var(--ink3)}
-.filters select{padding:5px 9px;border:1px solid var(--border2);border-radius:6px;font-size:12px;background:var(--bg);color:var(--ink)}
-.heatmap{width:100%;border-collapse:collapse;font-size:11px}
-.heatmap th{padding:5px 7px;text-align:center;font-weight:500;color:var(--ink3);border-bottom:1px solid var(--border)}
-.heatmap th.row-h{text-align:right;min-width:110px}
-.heatmap td{padding:4px 7px;text-align:center;border:1px solid var(--border);font-weight:500;cursor:default}
-.heatmap td:hover{outline:2px solid var(--blue)}
-.profile-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-.pc{border-radius:8px;padding:12px;border:1px solid var(--border)}
-.pc.fast{background:#edfaf3;border-color:#9de3c0}
-.pc.slow{background:#fdf0ec;border-color:#f0b89a}
-.pc.all{background:#f0f3fc;border-color:#a8bde8}
-.pc h3{font-size:12px;font-weight:700;margin-bottom:8px}
-.pc h3.fh{color:#0a6e47}.pc h3.sh{color:#8a2810}.pc h3.ah{color:var(--blue)}
-.bar-mini{display:flex;align-items:center;gap:5px;margin-bottom:4px;font-size:11px}
-.bmt{flex:1;background:var(--border);border-radius:3px;height:7px;overflow:hidden}
-.bmf{height:100%;border-radius:3px;background:var(--blue)}
-.dna-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
-.dna-card{border:1px solid var(--border);border-radius:10px;padding:12px;cursor:pointer;transition:all .15s}
-.dna-card:hover{border-color:var(--blue);box-shadow:0 2px 8px rgba(30,79,168,.1)}
-.dna-card.sel{border-color:var(--blue);background:#f0f5ff}
-.dna-detail{display:none;grid-column:1/-1;border:1px solid var(--blue);border-radius:10px;padding:14px;background:#f8fbff;margin-top:4px}
-.dna-detail.open{display:block}
-.dna-cols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px}
-.dna-col h5{font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;margin-bottom:6px}
-.cmp-filters{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
-.cmp-filters label{font-size:12px;color:var(--ink3)}
-.cmp-filters select{padding:5px 9px;border:1px solid var(--border2);border-radius:6px;font-size:12px;background:var(--bg);color:var(--ink)}
-
-/* ANALYST */
-#mode-analyst{display:none;flex:1;overflow:hidden}
-.analyst-body{display:flex;height:100%}
-.sidebar{width:220px;flex-shrink:0;background:var(--white);border-left:1px solid var(--border);overflow-y:auto;padding:12px 0}
-.sb-sec{padding:0 12px;margin-bottom:16px}
-.sb-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);margin-bottom:8px}
-.sb-filter{margin-bottom:8px}
-.sb-filter label{font-size:12px;color:var(--ink2);display:block;margin-bottom:3px}
-.sb-filter select{width:100%;padding:5px 8px;border:1px solid var(--border2);border-radius:6px;font-size:12px;background:var(--bg);color:var(--ink)}
-.sb-div{height:1px;background:var(--border);margin:0 0 12px}
-.qbtn{width:100%;padding:7px 10px;text-align:right;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--ink2);font-size:12px;cursor:pointer;margin-bottom:4px;transition:all .12s;line-height:1.3}
-.qbtn:hover{background:var(--blue-lt);color:var(--blue);border-color:var(--blue)}
-.chat-main{flex:1;display:flex;flex-direction:column;overflow:hidden}
-.results{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
-.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--ink3);padding:32px}
-.empty .ei{font-size:40px;margin-bottom:12px}
-.empty h2{font-size:17px;font-weight:700;color:var(--ink2);margin-bottom:5px}
-.empty p{font-size:13px;max-width:320px;line-height:1.5}
-.pills{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:14px}
-.pill{padding:6px 13px;border-radius:20px;font-size:12px;cursor:pointer;border:1px solid var(--border2);background:var(--white);color:var(--ink2);transition:all .12s}
-.pill:hover{background:var(--blue-lt);border-color:var(--blue);color:var(--blue)}
-.msg-user{background:var(--blue);color:#fff;border-radius:12px 12px 4px 12px;padding:10px 14px;font-size:14px;align-self:flex-start;max-width:78%}
-.msg-ai{background:var(--white);border:1px solid var(--border);border-radius:4px 12px 12px 12px;padding:16px;display:flex;flex-direction:column;gap:9px}
-.msg-ai .hl{font-size:15px;font-weight:700}
-.msg-ai .bt{font-size:13px;color:var(--ink);line-height:1.6}
-.insight-box{background:var(--teal-lt);border-right:3px solid var(--teal);border-radius:0 var(--r) var(--r) 0;padding:9px 12px}
-.insight-box p{font-size:13px;color:#0a5c3f;line-height:1.5}
-.stat-row{display:flex;flex-wrap:wrap;gap:6px}
-.sc{background:var(--blue-lt);color:var(--blue);border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600}
-.thinking{background:var(--bg);border:1px dashed var(--border2);border-radius:10px;padding:12px 15px;font-size:13px;color:var(--ink3);display:flex;align-items:center;gap:9px}
-.dots span{width:6px;height:6px;border-radius:50%;background:var(--ink3);animation:dp 1.2s infinite;display:inline-block;margin:0 2px}
+body{font-family:'Assistant',Arial,sans-serif;background:var(--paper);color:var(--ink);direction:rtl;min-height:100vh}
+.header{background:linear-gradient(135deg,var(--navy),var(--navy2));padding:18px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.header-logo{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+.header-title{font-size:18px;font-weight:700;color:var(--white)}
+.header-sub{font-size:12px;color:rgba(255,255,255,.5);margin-top:2px}
+.header-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.hbtn{padding:9px 18px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;border:none;transition:all .15s;font-family:inherit}
+.hbtn-primary{background:var(--gold);color:var(--navy)}
+.hbtn-primary:hover{background:#daa84a}
+.hbtn-primary:disabled{background:#666;color:#aaa;cursor:not-allowed}
+.hbtn-ghost{background:rgba(255,255,255,.1);color:var(--white);border:1px solid rgba(255,255,255,.2)}
+.hbtn-ghost:hover{background:rgba(255,255,255,.2)}
+.last-update{font-size:11px;color:rgba(255,255,255,.4)}
+.topics-bar{background:var(--navy);padding:0 24px 14px;display:flex;gap:6px;flex-wrap:wrap}
+.tp{padding:5px 13px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.6);background:transparent;transition:all .15s;font-family:inherit}
+.tp.active{background:var(--gold);color:var(--navy);border-color:var(--gold)}
+.tp:hover:not(.active){background:rgba(255,255,255,.1);color:var(--white)}
+.main{display:grid;grid-template-columns:1fr 320px;gap:14px;padding:18px 24px;max-width:1200px;margin:0 auto}
+.qcard{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:14px}
+.qcard h2{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin-bottom:10px}
+.q-wrap{display:flex;gap:8px}
+textarea#q{flex:1;padding:10px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;resize:none;height:50px;background:var(--paper);color:var(--ink);direction:rtl;transition:border-color .15s}
+textarea#q:focus{outline:none;border-color:var(--navy2)}
+.q-send{padding:0 18px;background:var(--navy);color:var(--white);border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
+.q-send:hover{background:var(--navy2)}
+.q-send:disabled{background:var(--ink3);cursor:not-allowed}
+.quick-qs{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
+.qq{padding:5px 11px;border-radius:16px;font-size:12px;cursor:pointer;border:1px solid var(--border);background:var(--paper);color:var(--ink2);font-family:inherit;transition:all .12s}
+.qq:hover{background:var(--sky);border-color:var(--navy2);color:var(--navy)}
+.results{display:flex;flex-direction:column;gap:12px}
+.rcard{background:var(--white);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.rcard-header{padding:14px 16px 0;display:flex;align-items:center;justify-content:space-between}
+.rtag{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;padding:3px 9px;border-radius:12px}
+.tag-live{background:var(--teal-lt);color:var(--teal)}
+.tag-q{background:var(--sky);color:var(--navy2)}
+.tag-alert{background:var(--coral-lt);color:var(--coral)}
+.rtime{font-size:11px;color:var(--ink3)}
+.rtitle{font-size:16px;font-weight:700;line-height:1.3;padding:8px 16px 0}
+.rbody{font-size:14px;color:var(--ink2);line-height:1.65;padding:10px 16px 14px}
+.rbody strong{color:var(--ink);font-weight:700}
+.rstats{display:flex;flex-wrap:wrap;gap:7px;padding:0 16px 14px}
+.rstat{background:var(--sky);border-radius:6px;padding:5px 11px;font-size:12px;font-weight:700;color:var(--navy2)}
+.rsources{border-top:1px solid var(--border);padding:10px 16px;display:flex;flex-wrap:wrap;gap:6px}
+.rsource{font-size:11px;color:var(--navy2);text-decoration:none;border:1px solid var(--border);border-radius:12px;padding:3px 9px;background:var(--paper)}
+.rsource:hover{background:var(--sky);border-color:var(--navy2)}
+.thinking{background:var(--white);border:1px dashed var(--border);border-radius:var(--r);padding:18px;display:flex;align-items:center;gap:10px;font-size:14px;color:var(--ink3)}
+.dots span{width:7px;height:7px;border-radius:50%;background:var(--gold);display:inline-block;margin:0 2px;animation:dp 1.2s infinite}
 .dots span:nth-child(2){animation-delay:.2s}.dots span:nth-child(3){animation-delay:.4s}
-@keyframes dp{0%,60%,100%{opacity:.25}30%{opacity:1}}
-.err-box{background:var(--coral-lt);color:var(--coral);border-radius:var(--r);padding:10px 14px;font-size:13px}
-.dtable{width:100%;border-collapse:collapse;font-size:12px}
-.dtable th{padding:6px 9px;text-align:right;font-size:10px;font-weight:600;color:var(--ink3);text-transform:uppercase;border-bottom:2px solid var(--border)}
-.dtable td{padding:6px 9px;border-bottom:1px solid var(--border)}
-.dtable tr:last-child td{border:none}
-.dtable tr:hover td{background:var(--blue-lt)}
-.input-bar{padding:10px 14px;background:var(--white);border-top:1px solid var(--border);display:flex;gap:8px;align-items:flex-end;flex-shrink:0}
-.input-wrap{flex:1;position:relative}
-textarea#q{width:100%;padding:9px 40px 9px 12px;border:1.5px solid var(--border2);border-radius:10px;font-size:14px;background:var(--bg);color:var(--ink);resize:none;min-height:42px;max-height:140px;font-family:inherit;line-height:1.5;direction:rtl;transition:border-color .15s}
-textarea#q:focus{outline:none;border-color:var(--blue)}
-.send-btn{position:absolute;left:8px;bottom:7px;width:28px;height:28px;border-radius:6px;background:var(--blue);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px}
-.send-btn:disabled{background:var(--border2);cursor:not-allowed}
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--teal);color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.15);transition:opacity .4s;pointer-events:none;white-space:nowrap}
-@media(max-width:640px){.sidebar{display:none}.row-2{grid-template-columns:1fr}.profile-grid{grid-template-columns:1fr}.dna-cols{grid-template-columns:1fr}.up-card{padding:24px 18px}}
+@keyframes dp{0%,60%,100%{opacity:.2}30%{opacity:1}}
+.sidebar{display:flex;flex-direction:column;gap:12px}
+.scard{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:14px}
+.scard h3{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);margin-bottom:10px}
+.srow{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;gap:8px}
+.sname{font-size:13px;font-weight:600}
+.sbar-wrap{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.sbar{height:100%;border-radius:3px;background:var(--navy2)}
+.spct{font-size:12px;font-weight:700;color:var(--ink2);min-width:28px;text-align:left}
+.erow{display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--border)}
+.erow:last-child{border-bottom:none}
+.eicon{width:30px;height:30px;border-radius:7px;background:var(--sky);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.ename{font-size:13px;font-weight:600}
+.esub{font-size:11px;color:var(--ink3)}
+.tip-box{background:linear-gradient(135deg,var(--navy),var(--navy2));border-radius:var(--r);padding:14px}
+.tip-box h3{color:var(--gold);font-size:10px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:7px}
+.tip-box p{font-size:13px;line-height:1.6;color:rgba(255,255,255,.8)}
+.empty{text-align:center;padding:48px 24px;color:var(--ink3)}
+.empty .ei{font-size:44px;margin-bottom:12px}
+.empty h2{font-size:19px;font-weight:700;color:var(--ink2);margin-bottom:7px}
+.empty p{font-size:13px;max-width:340px;margin:0 auto;line-height:1.6}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--teal);color:#fff;padding:9px 20px;border-radius:10px;font-size:13px;font-weight:700;z-index:999;box-shadow:0 4px 16px rgba(0,0,0,.2);transition:opacity .4s;pointer-events:none;white-space:nowrap}
+.err-box{background:var(--coral-lt);color:var(--coral);border-radius:var(--r);padding:14px 16px;font-size:13px}
+@media(max-width:768px){.main{grid-template-columns:1fr}.sidebar{order:-1}}
 </style>
 </head>
 <body>
 
-<!-- ══ UPLOAD SCREEN ══ -->
-<div id="screen-upload">
-  <div class="up-logo">גבהים · אנליסט נתונים</div>
-  <div class="up-card">
-    <h1>ברוכים הבאים</h1>
-    <div class="up-sub">העלה קובץ נתונים וקבל דשבורד + אפשרות לשאול שאלות חופשיות.</div>
-    <div class="warn">
-      <div class="warn-icon">⚠️</div>
-      <p><strong>חשוב — לפני העלאה</strong>יש להעלות קבצים עם נתונים מצוברים בלבד. אין להעלות קבצים עם שמות, אימיילים, טלפונים, או כל פרט מזהה אישי.</p>
-    </div>
-    <div class="dz" id="dz">
-      <input type="file" id="file-in" accept=".xlsx,.xls,.csv">
-      <div class="dz-icon">📊</div>
-      <p>גרור קובץ לכאן, או <strong onclick="document.getElementById('file-in').click()">לחץ לבחירה</strong></p>
-      <div class="dz-hint">Excel (.xlsx / .xls) או CSV — ללא פרטים אישיים</div>
-    </div>
-    <div id="up-status" style="min-height:36px"></div>
-    <button class="btn-go" id="btn-go" disabled>פתח אנליסט ←</button>
+<div class="header">
+  <div>
+    <div class="header-logo">גבהים</div>
+    <div class="header-title">מכ"ם הזדמנויות תעסוקה 🔴 חי</div>
+    <div class="header-sub">סריקת שוק העבודה הישראלי בזמן אמת</div>
+  </div>
+  <div class="header-actions">
+    <div class="last-update" id="last-update">טרם רוענן</div>
+    <button class="hbtn hbtn-ghost" onclick="exportReport()">📄 ייצא דוח</button>
+    <button class="hbtn hbtn-primary" id="refresh-btn" onclick="refreshAll()">🔄 רענן תמונת שוק</button>
   </div>
 </div>
 
-<!-- ══ APP ══ -->
-<div id="screen-app">
-  <div class="topbar">
-    <div class="topbar-logo">גבהים</div>
-    <div class="topbar-file" id="tb-file"></div>
-    <div class="topbar-rows" id="tb-rows"></div>
-    <button class="tb-btn active" id="btn-mode-dash" onclick="setMode('dashboard')">📊 דשבורד</button>
-    <button class="tb-btn" id="btn-mode-chat" onclick="setMode('analyst')">💬 שאל שאלה</button>
-    <button class="tb-btn" onclick="switchFile()">📂 החלף קובץ</button>
+<div class="topics-bar">
+  <button class="tp active" data-topic="שוק העבודה הישראלי לעולים חדשים">הכל</button>
+  <button class="tp" data-topic="הייטק ותוכנה בישראל עולים חדשים">הייטק / תוכנה</button>
+  <button class="tp" data-topic="פיננסים וכלכלה בישראל עולים חדשים">פיננסים</button>
+  <button class="tp" data-topic="הנדסה בישראל גיוס עולים">הנדסה</button>
+  <button class="tp" data-topic="רפואה ובריאות בישראל עולים רופאים">בריאות / רפואה</button>
+  <button class="tp" data-topic="שיווק ומכירות בישראל עולים חדשים">שיווק / מכירות</button>
+  <button class="tp" data-topic="חברות ישראליות מגייסות דוברי רוסית צרפתית">דוברי שפות זרות</button>
+</div>
+
+<div class="main">
+  <div>
+    <div class="qcard">
+      <h2>🔍 חפש מידע עדכני על שוק העבודה</h2>
+      <div class="q-wrap">
+        <textarea id="q" placeholder="לדוגמה: אילו חברות מגייסות דוברי רוסית? מגמות תעסוקה 2025..."></textarea>
+        <button class="q-send" id="send-btn" onclick="askQuestion()">חפש ←</button>
+      </div>
+      <div class="quick-qs">
+        <button class="qq" onclick="askQ(this)">חברות מגייסות דוברי רוסית 2025</button>
+        <button class="qq" onclick="askQ(this)">משרות הייטק לעולים ישראל</button>
+        <button class="qq" onclick="askQ(this)">שכר מהנדסים ישראל 2025</button>
+        <button class="qq" onclick="askQ(this)">הזדמנויות לרופאים עולים ישראל</button>
+        <button class="qq" onclick="askQ(this)">תכניות קליטה תעסוקתית עולים 2025</button>
+        <button class="qq" onclick="askQ(this)">חברות הייטק ידידותיות עולים</button>
+      </div>
+    </div>
+    <div class="results" id="results">
+      <div class="empty" id="empty-state">
+        <div class="ei">🗺️</div>
+        <h2>מידע חי על שוק העבודה</h2>
+        <p>לחץ על "רענן תמונת שוק" לקבלת מידע עדכני מהאינטרנט, או הקלד חיפוש ספציפי.</p>
+      </div>
+    </div>
   </div>
-  <div class="app-body">
 
-    <!-- DASHBOARD MODE -->
-    <div id="mode-dashboard">
-      <div class="metric-strip" id="metric-strip">
-        <div class="metric accent"><div class="metric-lbl">סה"כ רשומות</div><div class="metric-val" id="m-total">—</div><div class="metric-sub">בקובץ</div></div>
-        <div class="metric"><div class="metric-lbl">עמודות</div><div class="metric-val" id="m-cols">—</div><div class="metric-sub">סוגי נתונים</div></div>
-        <div class="metric"><div class="metric-lbl">ערכים ייחודיים</div><div class="metric-val" id="m-uniq1">—</div><div class="metric-sub" id="m-uniq1-lbl">—</div></div>
-        <div class="metric"><div class="metric-lbl">ערכים ייחודיים</div><div class="metric-val" id="m-uniq2">—</div><div class="metric-sub" id="m-uniq2-lbl">—</div></div>
-      </div>
-      <nav class="nav" id="dash-nav">
-        <button class="navbtn active" data-view="v-main">סקירה כללית</button>
-        <button class="navbtn" data-view="v-cross">מטריצת צלב</button>
-        <button class="navbtn" data-view="v-compare">השוואה</button>
-      </nav>
-      <div class="dash-content">
-        <div class="view active" id="v-main">
-          <div class="row-2">
-            <div class="card"><div class="card-title" id="c1-title">עמודה 1</div><div class="chart-wrap" style="height:240px"><canvas id="chart1"></canvas></div></div>
-            <div class="card"><div class="card-title" id="c2-title">עמודה 2</div><div class="chart-wrap" style="height:240px"><canvas id="chart2"></canvas></div></div>
-          </div>
-          <div class="row-2">
-            <div class="card"><div class="card-title" id="c3-title">עמודה 3</div><div class="chart-wrap" style="height:240px"><canvas id="chart3"></canvas></div></div>
-            <div class="card"><div class="card-title" id="c4-title">עמודה 4</div><div class="chart-wrap" style="height:240px"><canvas id="chart4"></canvas></div></div>
-          </div>
-        </div>
-        <div class="view" id="v-cross">
-          <div class="card">
-            <div class="filters">
-              <label>שורות:</label><select id="mx-row"></select>
-              <label>עמודות:</label><select id="mx-col"></select>
-            </div>
-            <div style="overflow-x:auto" id="mx-wrap"></div>
-          </div>
-        </div>
-        <div class="view" id="v-compare">
-          <div class="card">
-            <div class="cmp-filters">
-              <label>ממד:</label><select id="cmp-dim"></select>
-              <label>א׳:</label><select id="cmp-a"></select>
-              <label>ב׳:</label><select id="cmp-b"></select>
-            </div>
-            <div class="row-2" id="cmp-cards"></div>
-            <div class="chart-wrap" style="height:220px;margin-top:12px"><canvas id="chart-cmp"></canvas></div>
-          </div>
-        </div>
-      </div>
+  <div class="sidebar">
+    <div class="scard">
+      <h3>🔥 תחומים חמים לעולים</h3>
+      <div class="srow"><span class="sname">הייטק / תוכנה</span><div class="sbar-wrap"><div class="sbar" style="width:88%"></div></div><span class="spct">88%</span></div>
+      <div class="srow"><span class="sname">פיננסים</span><div class="sbar-wrap"><div class="sbar" style="width:72%"></div></div><span class="spct">72%</span></div>
+      <div class="srow"><span class="sname">הנדסה</span><div class="sbar-wrap"><div class="sbar" style="width:65%"></div></div><span class="spct">65%</span></div>
+      <div class="srow"><span class="sname">בריאות / רפואה</span><div class="sbar-wrap"><div class="sbar" style="width:58%"></div></div><span class="spct">58%</span></div>
+      <div class="srow"><span class="sname">שיווק דיגיטלי</span><div class="sbar-wrap"><div class="sbar" style="width:51%"></div></div><span class="spct">51%</span></div>
     </div>
-
-    <!-- ANALYST MODE -->
-    <div id="mode-analyst">
-      <div class="analyst-body">
-        <div class="sidebar">
-          <div class="sb-sec">
-            <div class="sb-title">פילטרים</div>
-            <div id="filter-slots"></div>
-          </div>
-          <div class="sb-div"></div>
-          <div class="sb-sec">
-            <div class="sb-title">שאלות מהירות</div>
-            <div id="quick-btns"></div>
-          </div>
-        </div>
-        <div class="chat-main">
-          <div class="results" id="results">
-            <div class="empty" id="empty-state">
-              <div class="ei">💬</div>
-              <h2>שאל כל שאלה על הנתונים</h2>
-              <p>Claude יבין את הקובץ ויחזיר תשובה עם גרף ותובנות.</p>
-              <div class="pills" id="suggestion-pills"></div>
-            </div>
-          </div>
-          <div class="input-bar">
-            <div class="input-wrap">
-              <textarea id="q" placeholder="לדוגמה: כמה משתתפים לפי מדינה? מה התחומים המובילים?..." rows="1"></textarea>
-              <button class="send-btn" id="send-btn">↑</button>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div class="scard">
+      <h3>🏢 מעסיקים ידידותיים לעולים</h3>
+      <div class="erow"><div class="eicon">💻</div><div><div class="ename">Microsoft Israel</div><div class="esub">הייטק · דוברי שפות</div></div></div>
+      <div class="erow"><div class="eicon">🏦</div><div><div class="ename">Bank Leumi</div><div class="esub">פיננסים · תכניות לעולים</div></div></div>
+      <div class="erow"><div class="eicon">🏥</div><div><div class="ename">Clalit Health</div><div class="esub">רפואה · גיוס פעיל</div></div></div>
+      <div class="erow"><div class="eicon">🚀</div><div><div class="ename">Wix</div><div class="esub">הייטק · סביבה בינלאומית</div></div></div>
     </div>
-
+    <div class="tip-box">
+      <h3>💡 תובנה אחרונה</h3>
+      <p id="last-insight">לחץ על "רענן תמונת שוק" לקבלת תובנה עדכנית.</p>
+    </div>
   </div>
 </div>
 
 <script>
-
+const TAVILY_KEY = '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';
 const _k=['sk-ant-a','pi03-ESPQP','lg_381TyPgfmEC-g6Meplhe4mXp8T7RZV_AqmdYHClVPiims2o_WG3-GXZKDifRFejfwu4vkU-y8ufK4w-P1GLvwAA'];
-const API_KEY=_k.join('');
-const MODEL = 'claude-sonnet-4-6';
-const PALETTE = ['#1e4fa8','#127a58','#c94028','#a86010','#6e4fc7','#0c7b9e','#8a3a8a','#3a6e3a','#9e6a12','#1e6e6e','#8a6e00','#3a1e6e'];
+const CLAUDE_KEY=_k.join('');
+const MODEL='claude-sonnet-4-6';
+let isLoading=false;
+let activeTopic='שוק העבודה הישראלי לעולים חדשים';
 
-let rawRows=[], fileName='', colMeta=[], isLoading=false, chartCount=0;
+document.querySelector('.topics-bar').addEventListener('click',e=>{
+  const tp=e.target.closest('.tp');if(!tp)return;
+  document.querySelectorAll('.tp').forEach(p=>p.classList.remove('active'));
+  tp.classList.add('active');
+  activeTopic=tp.dataset.topic;
+});
 
-// ── UPLOAD ──
-const dz=document.getElementById('dz');
-const fileIn=document.getElementById('file-in');
-const upStatus=document.getElementById('up-status');
-const btnGo=document.getElementById('btn-go');
+document.getElementById('q').addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();askQuestion();}
+});
 
-dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag')});
-dz.addEventListener('dragleave',()=>dz.classList.remove('drag'));
-dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag');loadFile(e.dataTransfer.files[0])});
-fileIn.addEventListener('change',e=>loadFile(e.target.files[0]));
-btnGo.addEventListener('click',startApp);
+function askQ(btn){document.getElementById('q').value=btn.textContent;askQuestion();}
 
-function loadFile(file){
-  if(!file)return;
-  fileName=file.name;
-  upStatus.innerHTML='<div style="font-size:13px;color:var(--ink3)">קורא קובץ...</div>';
-  btnGo.disabled=true;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    try{
-      let rows;
-      if(file.name.toLowerCase().endsWith('.csv')){
-        const text=new TextDecoder('utf-8').decode(e.target.result);
-        const wb=XLSX.read(text,{type:'string'});
-        rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''});
-      } else {
-        const wb=XLSX.read(e.target.result,{type:'array'});
-        const ws=wb.Sheets[wb.SheetNames[0]];
-        const arr=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
-        let hr=0;
-        for(let i=0;i<Math.min(30,arr.length);i++){
-          if(arr[i].filter(c=>c&&String(c).trim()).length>=4){hr=i;break;}
-        }
-        const headers=arr[hr].map((h,i)=>h&&String(h).trim()?String(h).trim():`עמודה_${i+1}`);
-        rows=arr.slice(hr+1).filter(r=>r.some(c=>c&&String(c).trim()))
-          .map(r=>Object.fromEntries(headers.map((h,i)=>[h,r[i]??''])));
-      }
-      rawRows=rows;
-      upStatus.innerHTML=`<div class="file-badge">✓ ${file.name} — ${rows.length.toLocaleString()} שורות</div>`;
-      btnGo.disabled=false;
-    } catch(err){
-      upStatus.innerHTML=`<div class="up-err">שגיאה: ${err.message}</div>`;
-    }
-  };
-  reader.readAsArrayBuffer(file);
-}
-
-function startApp(){
-  document.getElementById('screen-upload').style.display='none';
-  const app=document.getElementById('screen-app');
-  app.style.display='flex';app.style.flexDirection='column';
-  initApp();
-}
-
-function switchFile(){
-  document.getElementById('screen-upload').style.display='flex';
-  document.getElementById('screen-app').style.display='none';
-  upStatus.innerHTML='';btnGo.disabled=true;fileIn.value='';rawRows=[];
-}
-
-function setMode(mode){
-  document.getElementById('mode-dashboard').style.display=mode==='dashboard'?'block':'none';
-  document.getElementById('mode-analyst').style.display=mode==='analyst'?'flex':'none';
-  document.getElementById('btn-mode-dash').classList.toggle('active',mode==='dashboard');
-  document.getElementById('btn-mode-chat').classList.toggle('active',mode==='analyst');
-}
-
-// ── INIT ──
-function initApp(){
-  const cols=Object.keys(rawRows[0]||{});
-  document.getElementById('tb-file').textContent=fileName;
-  document.getElementById('tb-rows').textContent=rawRows.length.toLocaleString()+' שורות';
-
-  // Analyse columns
-  colMeta=cols.map(col=>{
-    const vals=rawRows.map(r=>String(r[col]||'').split(';')[0].trim()).filter(Boolean);
-    const uniq=[...new Set(vals)];
-    const numeric=vals.filter(v=>!isNaN(parseFloat(v))&&isFinite(v));
-    return {col, uniq:uniq.length, isCategoric:uniq.length>=2&&uniq.length<=150, isNumeric:numeric.length>vals.length*0.7, sample:uniq.slice(0,5)};
-  }).filter(c=>c.isCategoric||c.isNumeric);
-
-  buildMetrics(cols);
-  buildDashboard();
-  buildAnalyst(cols);
-  setMode('dashboard');
-}
-
-function countBy(col,n=20){
-  const m={};
-  rawRows.forEach(r=>{const v=String(r[col]||'').split(';')[0].trim()||'לא ידוע';m[v]=(m[v]||0)+1;});
-  return Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,n);
-}
-
-// ── METRICS ──
-function buildMetrics(cols){
-  document.getElementById('m-total').textContent=rawRows.length.toLocaleString();
-  document.getElementById('m-cols').textContent=cols.length;
-  const cats=colMeta.filter(c=>c.isCategoric);
-  if(cats[0]){document.getElementById('m-uniq1').textContent=cats[0].uniq;document.getElementById('m-uniq1-lbl').textContent=cats[0].col;}
-  if(cats[1]){document.getElementById('m-uniq2').textContent=cats[1].uniq;document.getElementById('m-uniq2-lbl').textContent=cats[1].col;}
-}
-
-// ── DASHBOARD ──
-function buildDashboard(){
-  const cats=colMeta.filter(c=>c.isCategoric).slice(0,4);
-  cats.forEach((cm,i)=>{
-    const id='chart'+(i+1);
-    document.getElementById('c'+(i+1)+'-title').textContent=cm.col;
-    const data=countBy(cm.col,12);
-    const horiz=data.length>6;
-    mkChart(id,'bar',data.map(x=>x[0]),data.map(x=>x[1]),{horiz});
-  });
-
-  // Nav
-  document.getElementById('dash-nav').addEventListener('click',e=>{
-    const btn=e.target.closest('.navbtn');if(!btn)return;
-    document.querySelectorAll('.navbtn').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
-    document.getElementById(btn.dataset.view).classList.add('active');
-    if(btn.dataset.view==='v-cross')buildMatrix();
-    if(btn.dataset.view==='v-compare')buildCompare();
-  });
-}
-
-function mkChart(id,type,labels,values,opts={}){
-  const el=document.getElementById(id);if(!el)return;
-  if(el._ch)el._ch.destroy();
-  const isPie=type==='pie';
-  const horiz=opts.horiz&&!isPie;
-  const colors=labels.map((_,i)=>PALETTE[i%PALETTE.length]);
-  el._ch=new Chart(el,{
-    type:isPie?'doughnut':'bar',
-    data:{labels,datasets:[{label:'',data:values,
-      backgroundColor:isPie?colors:colors.map(c=>c+'cc'),
-      borderColor:isPie?'#fff':colors,
-      borderWidth:isPie?2:1,borderRadius:isPie?0:4}]},
-    options:{responsive:true,maintainAspectRatio:false,
-      indexAxis:horiz?'y':'x',
-      plugins:{legend:{display:isPie,position:'bottom',labels:{font:{size:11},padding:8}},
-        tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${Number(ctx.raw).toLocaleString()}`}}},
-      scales:isPie?{}:{x:{ticks:{font:{size:10}},grid:{color:'rgba(0,0,0,0.05)'}},y:{ticks:{font:{size:10}},grid:{color:'rgba(0,0,0,0.05)'}}}}
-  });
-}
-
-// ── MATRIX ──
-function buildMatrix(){
-  const cats=colMeta.filter(c=>c.isCategoric);
-  const rowSel=document.getElementById('mx-row');
-  const colSel=document.getElementById('mx-col');
-  if(!rowSel.children.length){
-    cats.forEach(c=>{
-      [rowSel,colSel].forEach(s=>{const o=document.createElement('option');o.value=c.col;o.textContent=c.col;s.appendChild(o);});
-    });
-    if(cats.length>1)colSel.selectedIndex=1;
-    rowSel.addEventListener('change',renderMatrix);
-    colSel.addEventListener('change',renderMatrix);
-  }
-  renderMatrix();
-}
-
-function renderMatrix(){
-  const r=document.getElementById('mx-row').value;
-  const c=document.getElementById('mx-col').value;
-  if(!r||!c)return;
-  const cross={};
-  rawRows.forEach(row=>{
-    const rv=String(row[r]||'').split(';')[0].trim()||'לא ידוע';
-    const cv=String(row[c]||'').split(';')[0].trim()||'לא ידוע';
-    if(!cross[rv])cross[rv]={};
-    cross[rv][cv]=(cross[rv][cv]||0)+1;
-  });
-  const topR=Object.entries(cross).sort((a,b)=>Object.values(b[1]).reduce((x,y)=>x+y,0)-Object.values(a[1]).reduce((x,y)=>x+y,0)).slice(0,10);
-  const allC=[...new Set(rawRows.map(row=>String(row[c]||'').split(';')[0].trim()))].filter(Boolean);
-  const topC=allC.map(v=>({v,n:rawRows.filter(row=>String(row[c]||'').split(';')[0].trim()===v).length})).sort((a,b)=>b.n-a.n).slice(0,10).map(x=>x.v);
-  const rowMaxes=topR.map(([,v])=>Math.max(1,...topC.map(col=>v[col]||0)));
-  let html=`<table class="heatmap"><thead><tr><th class="row-h"></th>${topC.map(col=>`<th>${col}</th>`).join('')}</tr></thead><tbody>`;
-  topR.forEach(([rk,rv],ri)=>{
-    html+=`<tr><th class="row-h">${rk}</th>`;
-    topC.forEach(ck=>{
-      const v=rv[ck]||0;
-      const pct=v/rowMaxes[ri];
-      const bg=v?`rgba(30,79,168,${(pct*0.65+0.07).toFixed(2)})`:'#f5f4ef';
-      const fg=pct>0.5?'#fff':'#1c1c1a';
-      html+=`<td style="background:${bg};color:${v?fg:'#ccc'}">${v||''}</td>`;
-    });
-    html+=`</tr>`;
-  });
-  html+=`</tbody></table>`;
-  document.getElementById('mx-wrap').innerHTML=html;
-}
-
-// ── COMPARE ──
-function buildCompare(){
-  const cats=colMeta.filter(c=>c.isCategoric);
-  const dimSel=document.getElementById('cmp-dim');
-  if(!dimSel.children.length){
-    cats.forEach(c=>{const o=document.createElement('option');o.value=c.col;o.textContent=c.col;dimSel.appendChild(o);});
-    dimSel.addEventListener('change',updateCmpOptions);
-    document.getElementById('cmp-a').addEventListener('change',renderCompare);
-    document.getElementById('cmp-b').addEventListener('change',renderCompare);
-    updateCmpOptions();
-  } else renderCompare();
-}
-
-function updateCmpOptions(){
-  const dim=document.getElementById('cmp-dim').value;
-  const vals=countBy(dim,20).map(x=>x[0]);
-  [document.getElementById('cmp-a'),document.getElementById('cmp-b')].forEach((s,i)=>{
-    s.innerHTML=vals.map(v=>`<option value="${v}">${v}</option>`).join('');
-    if(i===1&&vals.length>1)s.selectedIndex=1;
-  });
-  renderCompare();
-}
-
-function renderCompare(){
-  const dim=document.getElementById('cmp-dim').value;
-  const a=document.getElementById('cmp-a').value;
-  const b=document.getElementById('cmp-b').value;
-  if(!a||!b)return;
-  const subA=rawRows.filter(r=>String(r[dim]||'').split(';')[0].trim()===a);
-  const subB=rawRows.filter(r=>String(r[dim]||'').split(';')[0].trim()===b);
-  const otherCats=colMeta.filter(c=>c.isCategoric&&c.col!==dim).slice(0,1);
-  const cards=document.getElementById('cmp-cards');
-  cards.innerHTML=[{label:a,sub:subA,color:'#1e4fa8'},{label:b,sub:subB,color:'#c94028'}].map(({label,sub,color})=>{
-    const topField=otherCats[0]?countBy_sub(sub,otherCats[0].col,3):[];
-    return`<div class="card" style="border-top:3px solid ${color}">
-      <div style="font-size:15px;font-weight:700;color:${color};margin-bottom:10px">${label}</div>
-      <div style="font-size:24px;font-weight:700;margin-bottom:4px">${sub.length.toLocaleString()}</div>
-      <div style="font-size:11px;color:var(--ink3);margin-bottom:10px">רשומות</div>
-      ${topField.length?`<div style="font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;margin-bottom:6px">${otherCats[0].col}</div>${topField.map(([k,v])=>`<div class="bar-mini"><span style="min-width:80px;font-size:11px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${k}</span><div class="bmt"><div class="bmf" style="width:${Math.round(v/topField[0][1]*100)}%;background:${color}"></div></div><span style="font-size:11px">${v}</span></div>`).join('')}`:''}
-    </div>`;
-  }).join('');
-  // compare chart
-  mkChart('chart-cmp','bar',[a,b],[subA.length,subB.length],{});
-  const el=document.getElementById('chart-cmp');
-  if(el._ch){el._ch.data.datasets[0].backgroundColor=['#1e4fa8cc','#c94028cc'];el._ch.data.datasets[0].borderColor=['#1e4fa8','#c94028'];el._ch.update();}
-}
-
-function countBy_sub(rows,col,n){
-  const m={};
-  rows.forEach(r=>{const v=String(r[col]||'').split(';')[0].trim()||'לא ידוע';m[v]=(m[v]||0)+1;});
-  return Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,n);
-}
-
-// ── ANALYST ──
-function buildAnalyst(cols){
-  const find=(...terms)=>cols.find(k=>terms.some(t=>k.toLowerCase().includes(t.toLowerCase())))||null;
-  const colCountry=find('country','מדינה','origin');
-  const colProgram=find('program','תכנית','מסלול');
-  const colField=find('field','תחום','professional');
-
-  // Filters
-  const filterCols=[colCountry,colProgram,colField].filter(Boolean).slice(0,3);
-  const fs=document.getElementById('filter-slots');fs.innerHTML='';
-  filterCols.forEach(col=>{
-    const div=document.createElement('div');div.className='sb-filter';
-    const lbl=document.createElement('label');lbl.textContent=col;lbl.htmlFor='sf-'+col;
-    const sel=document.createElement('select');sel.id='sf-'+col;sel.className='';
-    sel.style.cssText='width:100%;padding:5px 8px;border:1px solid var(--border2);border-radius:6px;font-size:12px;background:var(--bg);color:var(--ink)';
-    sel.innerHTML='<option value="">הכל</option>';
-    const vals=[...new Set(rawRows.map(r=>String(r[col]||'').split(';')[0].trim()).filter(Boolean))].sort().slice(0,80);
-    vals.forEach(v=>{const o=document.createElement('option');o.value=v;o.textContent=v.slice(0,40);sel.appendChild(o);});
-    div.appendChild(lbl);div.appendChild(sel);fs.appendChild(div);
-  });
-
-  // Quick questions
-  const qs=buildQuestions(cols,colCountry,colProgram,colField);
-  const qc=document.getElementById('quick-btns');qc.innerHTML='';
-  qs.slice(0,7).forEach(q=>{
-    const b=document.createElement('button');b.className='qbtn';b.textContent=q.label;
-    b.addEventListener('click',()=>ask(q.q));qc.appendChild(b);
-  });
-  const pills=document.getElementById('suggestion-pills');pills.innerHTML='';
-  qs.slice(0,5).forEach(q=>{
-    const p=document.createElement('div');p.className='pill';p.textContent=q.label;
-    p.addEventListener('click',()=>ask(q.q));pills.appendChild(p);
-  });
-
-  // Send
-  const ta=document.getElementById('q'),sb=document.getElementById('send-btn');
-  ta.addEventListener('input',()=>{ta.style.height='auto';ta.style.height=Math.min(ta.scrollHeight,140)+'px';});
-  ta.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();ask(ta.value.trim())}});
-  sb.addEventListener('click',()=>ask(ta.value.trim()));
-}
-
-function buildQuestions(cols,country,program,field){
-  const qs=[];
-  if(country)qs.push({label:'📍 פילוח לפי מדינה',q:`כמה רשומות יש לפי "${country}"? הצג גרף עמודות אופקי`});
-  if(program)qs.push({label:'🎓 פילוח לפי תכנית',q:`כמה רשומות לפי "${program}"? הצג גרף`});
-  if(field)qs.push({label:'💼 תחומים מובילים',q:`מהם התחומים המקצועיים הנפוצים ביותר ב-"${field}"?`});
-  if(country&&field)qs.push({label:'🔀 מדינה × תחום',q:`הצג מטריצה של "${country}" × "${field}"`});
-  if(program&&country)qs.push({label:'📊 תכנית × מדינה',q:`השווה בין תכניות לפי מדינת מוצא`});
-  qs.push({label:'📈 סיכום כללי',q:'תן לי סיכום כללי של הנתונים: מה יש בקובץ, כמה רשומות, ומה התובנות העיקריות?'});
-  qs.push({label:'🔍 ממצאים מעניינים',q:'מה הממצאים המעניינים או החריגים שאתה מזהה בנתונים?'});
-  qs.push({label:'⚡ מי בולט',q:'מה הקבוצות הגדולות ביותר בכל עמודה? מה חריג לעומת הממוצע?'});
-  return qs;
-}
-
-// ── ASK ──
-async function ask(question){
-  if(!question||isLoading)return;
-  isLoading=true;
-  setMode('analyst');
-  document.getElementById('empty-state').style.display='none';
+async function askQuestion(){
+  const q=document.getElementById('q').value.trim();
+  if(!q||isLoading)return;
   document.getElementById('q').value='';
-  document.getElementById('q').style.height='auto';
+  await runSearch(q,'question');
+}
+
+async function refreshAll(){
+  await runSearch(activeTopic+' מגמות גיוס חדשות 2025','refresh');
+}
+
+async function runSearch(query,type){
+  if(isLoading)return;
+  isLoading=true;
+  document.getElementById('refresh-btn').disabled=true;
   document.getElementById('send-btn').disabled=true;
-  const area=document.getElementById('results');
-  const um=document.createElement('div');um.className='msg-user';um.textContent=question;area.appendChild(um);
-  const th=document.createElement('div');th.className='thinking';
-  th.innerHTML='<div class="dots"><span></span><span></span><span></span></div> מנתח נתונים...';
-  area.appendChild(th);area.scrollTop=area.scrollHeight;
+  document.getElementById('empty-state').style.display='none';
+
+  const results=document.getElementById('results');
+  const th=document.createElement('div');
+  th.className='thinking';
+  th.innerHTML='<div class="dots"><span></span><span></span><span></span></div> סורק את האינטרנט בזמן אמת...';
+  results.prepend(th);
+
   try{
-    const summary=buildSummary(question);
-    const raw=await callClaude(question,summary);
-    th.remove();renderAnswer(raw,area);
+    // Step 1: Search with Tavily
+    const searchData = await tavilySearch(query);
+    
+    // Step 2: Summarize with Claude
+    const summary = await claudeSummarize(query, searchData);
+    
+    th.remove();
+    renderResult(summary, searchData.results||[], type, results);
+    document.getElementById('last-update').textContent='עודכן: '+new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});
   } catch(err){
     th.remove();
-    const e=document.createElement('div');e.className='msg-ai';
-    e.innerHTML=`<div class="err-box">שגיאה: ${err.message}</div>`;area.appendChild(e);
+    const e=document.createElement('div');
+    e.className='err-box';
+    e.textContent='שגיאה: '+err.message;
+    results.prepend(e);
   }
-  isLoading=false;document.getElementById('send-btn').disabled=false;area.scrollTop=area.scrollHeight;
+  isLoading=false;
+  document.getElementById('refresh-btn').disabled=false;
+  document.getElementById('send-btn').disabled=false;
 }
 
-function buildSummary(question){
-  const cols=Object.keys(rawRows[0]||{});
-  const filterEls=document.querySelectorAll('#filter-slots select');
-  let data=rawRows;
-  filterEls.forEach(sel=>{
-    if(sel.value){
-      const col=sel.previousElementSibling.textContent;
-      data=data.filter(r=>String(r[col]||'').split(';')[0].trim()===sel.value);
-    }
+async function tavilySearch(query){
+  const res = await fetch('https://api.tavily.com/search',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      api_key: TAVILY_KEY,
+      query: query,
+      search_depth: 'basic',
+      max_results: 6,
+      include_answer: true,
+      include_raw_content: false
+    })
   });
-  const total=data.length;
-  const aggs={};
-  cols.forEach(col=>{
-    const uniq=[...new Set(data.map(r=>String(r[col]||'').trim()))].filter(Boolean);
-    if(uniq.length>=2&&uniq.length<=100){
-      const m={};
-      data.forEach(r=>{const v=String(r[col]||'').split(';')[0].trim()||'לא ידוע';m[v]=(m[v]||0)+1;});
-      aggs[col]=Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,15).map(([k,v])=>({value:k,count:v}));
-    }
-  });
-  return JSON.stringify({file_name:fileName,total_records:total,columns:cols,aggregations:aggs,sample_row:data[0]?Object.fromEntries(Object.entries(data[0]).slice(0,8)):{}},null,1);
+  if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||`Tavily: HTTP ${res.status}`);}
+  return await res.json();
 }
 
-async function callClaude(question,summary){
-  const system=`אתה אנליסט נתונים של עמותת גבהים. ענה בשפה של השאלה (עברית או אנגלית).
-אחרי התשובה הוסף תג [DATA] ואחריו JSON:
+async function claudeSummarize(query, searchData){
+  const sources = (searchData.results||[]).map((r,i)=>`[${i+1}] ${r.title}\n${r.content||r.snippet||''}`).join('\n\n');
+  const answer = searchData.answer||'';
+  
+  const prompt = `השאלה: ${query}
+
+תשובת Tavily: ${answer}
+
+מקורות:
+${sources}
+
+בהתבסס על המידע הזה, כתוב ניתוח מפורט ומעשי בעברית לצוות עמותת גבהים המלווה עולים חדשים לתעסוקה בישראל.
+הדגש הזדמנויות, מגמות, ומידע שימושי לצוות.
+
+אחרי התשובה הוסף [DATA] ואחריו JSON:
 [DATA]
-{"headline":"תובנה ראשית","body":"2-3 משפטים","insight":"המלצה","stat_chips":["נתון 1","נתון 2"],"chart_type":"bar|horizontalBar|pie|line|table|none","chart_title":"כותרת","chart_labels":["..."],"chart_values":[מספרים],"chart_colors":["#hex"],"table_headers":["עמודה"],"table_rows":[["ערך"]]}
-השתמש רק בנתונים מהסיכום.`;
+{"title":"כותרת קצרה","stats":["נתון 1","נתון 2","נתון 3"],"tag":"live","tip":"טיפ קצר לצוות"}`;
+
   const res=await fetch('https://proxy.cors.sh/https://api.anthropic.com/v1/messages',{
     method:'POST',
-    headers:{'Content-Type':'application/json','x-api-key':API_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-client-side-api-key-allow-browser-usage':'true','x-cors-api-key':'temp_b9d02ef78da54e1984a5d8c8c3e3d45f'},
-    body:JSON.stringify({model:MODEL,max_tokens:1500,system,messages:[{role:'user',content:`שאלה: ${question}\n\nנתונים:\n${summary}`}]})
+    headers:{
+      'Content-Type':'application/json',
+      'x-api-key':CLAUDE_KEY,
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-client-side-api-key-allow-browser-usage':'true',
+      'x-cors-api-key':'temp_b9d02ef78da54e1984a5d8c8c3e3d45f'
+    },
+    body:JSON.stringify({model:MODEL,max_tokens:1200,messages:[{role:'user',content:prompt}]})
   });
-  if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error?.message||`HTTP ${res.status}`);}
-  const d=await res.json();return d.content[0].text;
+  if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error?.message||`Claude: HTTP ${res.status}`);}
+  const d=await res.json();
+  return d.content[0].text;
 }
 
-function renderAnswer(text,area){
+function renderResult(text, sources, type, results){
   const di=text.indexOf('[DATA]');
   const prose=di>-1?text.slice(0,di).trim():text.trim();
   let p=null;
@@ -649,36 +287,47 @@ function renderAnswer(text,area){
     const raw=text.slice(di+6).trim().replace(/```json|```/g,'').trim();
     try{p=JSON.parse(raw);}catch{const m=raw.match(/\{[\s\S]*\}/);if(m){try{p=JSON.parse(m[0]);}catch{}}}
   }
-  const block=document.createElement('div');block.className='msg-ai';
-  if(p?.headline)block.innerHTML+=`<div class="hl">${p.headline}</div>`;
-  if(p?.stat_chips?.length)block.innerHTML+=`<div class="stat-row">${p.stat_chips.map(c=>`<div class="sc">${c}</div>`).join('')}</div>`;
-  if(p?.body||prose)block.innerHTML+=`<div class="bt">${(p?.body||prose).replace(/\n/g,'<br>')}</div>`;
-  if(p?.insight)block.innerHTML+=`<div class="insight-box"><p>${p.insight}</p></div>`;
-  const cid='c'+(++chartCount);
-  const hasChart=p?.chart_type&&p.chart_type!=='none'&&p.chart_type!=='table'&&p?.chart_labels?.length&&p?.chart_values?.length;
-  const hasTable=p?.chart_type==='table'&&p?.table_rows?.length;
-  if(hasChart){
-    const horiz=p.chart_type==='horizontalBar'||p.chart_labels.length>7;
-    const h=horiz?Math.max(200,p.chart_labels.length*32+60):240;
-    block.innerHTML+=`<div style="position:relative;width:100%;height:${h}px"><canvas id="${cid}"></canvas></div>`;
+
+  const card=document.createElement('div');card.className='rcard';
+  let html=`<div class="rcard-header"><span class="rtag tag-live">🔴 חי — זמן אמת</span><span class="rtime">${new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'})}</span></div>`;
+  if(p?.title)html+=`<div class="rtitle">${p.title}</div>`;
+  html+=`<div class="rbody">${prose.replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')}</div>`;
+  if(p?.stats?.length)html+=`<div class="rstats">${p.stats.map(s=>`<div class="rstat">${s}</div>`).join('')}</div>`;
+  
+  // Sources
+  const validSources=sources.filter(s=>s.url);
+  if(validSources.length){
+    html+=`<div class="rsources">📎 מקורות: ${validSources.slice(0,4).map(s=>`<a href="${s.url}" target="_blank" class="rsource">${s.title?.slice(0,30)||s.url}</a>`).join('')}</div>`;
   }
-  if(hasTable)block.innerHTML+=`<div style="overflow-x:auto"><table class="dtable"><thead><tr>${(p.table_headers||[]).map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${p.table_rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
-  area.appendChild(block);
-  if(hasChart){
-    const isPie=p.chart_type==='pie'||p.chart_type==='doughnut';
-    const horiz=p.chart_type==='horizontalBar'||p.chart_labels.length>7;
-    const colors=p.chart_colors||p.chart_labels.map((_,i)=>PALETTE[i%PALETTE.length]);
-    new Chart(document.getElementById(cid),{
-      type:isPie?'doughnut':'bar',
-      data:{labels:p.chart_labels,datasets:[{label:p.chart_title||'',data:p.chart_values,backgroundColor:isPie?colors:colors.map(c=>c+'cc'),borderColor:isPie?'#fff':colors,borderWidth:isPie?2:1,borderRadius:isPie?0:4}]},
-      options:{responsive:true,maintainAspectRatio:false,indexAxis:horiz&&!isPie?'y':'x',
-        plugins:{legend:{display:isPie,position:'bottom',labels:{font:{size:11},padding:8}},tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${Number(ctx.raw).toLocaleString()}`}}},
-        scales:isPie?{}:{x:{ticks:{font:{size:10}},grid:{color:'rgba(0,0,0,0.05)'}},y:{ticks:{font:{size:10}},grid:{color:'rgba(0,0,0,0.05)'}}}}
-    });
-  }
+  card.innerHTML=html;
+  results.prepend(card);
+
+  if(p?.tip)document.getElementById('last-insight').textContent=p.tip;
 }
 
-function showToast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),400);},2600);}
+function exportReport(){
+  const cards=document.querySelectorAll('.rcard');
+  if(!cards.length){showToast('אין תוכן לייצוא');return;}
+  let text=`דוח מכ"ם הזדמנויות — גבהים\n${new Date().toLocaleDateString('he-IL')}\n${'='.repeat(40)}\n\n`;
+  cards.forEach(c=>{
+    const title=c.querySelector('.rtitle');
+    const body=c.querySelector('.rbody');
+    if(title)text+=`## ${title.textContent}\n`;
+    if(body)text+=body.textContent+'\n\n---\n\n';
+  });
+  const blob=new Blob([text],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`gvahim-${new Date().toISOString().slice(0,10)}.txt`;
+  a.click();
+  showToast('הדוח יוצא!');
+}
+
+function showToast(msg){
+  const t=document.createElement('div');t.className='toast';t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),400);},2600);
+}
 </script>
 </body>
 </html>
