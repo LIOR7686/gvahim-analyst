@@ -340,14 +340,13 @@ ${sources}
 [DATA]
 {"title":"כותרת קצרה","stats":["נתון 1","נתון 2","נתון 3"],"tag":"live","tip":"טיפ קצר לצוות"}`;
 
-  const res=await fetch('https://proxy.cors.sh/https://api.anthropic.com/v1/messages',{
+  const res=await fetch('https://api.anthropic.com/v1/messages',{
     method:'POST',
     headers:{
       'Content-Type':'application/json',
       'x-api-key':CLAUDE_KEY,
       'anthropic-version':'2023-06-01',
-      'anthropic-dangerous-client-side-api-key-allow-browser-usage':'true',
-      'x-cors-api-key':'temp_b9d02ef78da54e1984a5d8c8c3e3d45f'
+      'anthropic-dangerous-client-side-api-key-allow-browser-usage':'true'
     },
     body:JSON.stringify({model:MODEL,max_tokens:1200,messages:[{role:'user',content:prompt}]})
   });
