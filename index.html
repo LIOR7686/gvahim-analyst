@@ -632,9 +632,9 @@ async function callClaude(question,summary){
 [DATA]
 {"headline":"תובנה ראשית","body":"2-3 משפטים","insight":"המלצה","stat_chips":["נתון 1","נתון 2"],"chart_type":"bar|horizontalBar|pie|line|table|none","chart_title":"כותרת","chart_labels":["..."],"chart_values":[מספרים],"chart_colors":["#hex"],"table_headers":["עמודה"],"table_rows":[["ערך"]]}
 השתמש רק בנתונים מהסיכום.`;
-  const res=await fetch('https://api.anthropic.com/v1/messages',{
+  const res=await fetch('https://proxy.cors.sh/https://api.anthropic.com/v1/messages',{
     method:'POST',
-    headers:{'Content-Type':'application/json','x-api-key':API_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-client-side-api-key-allow-browser-usage':'true'},
+    headers:{'Content-Type':'application/json','x-api-key':API_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-client-side-api-key-allow-browser-usage':'true','x-cors-api-key':'temp_b9d02ef78da54e1984a5d8c8c3e3d45f'},
     body:JSON.stringify({model:MODEL,max_tokens:1500,system,messages:[{role:'user',content:`שאלה: ${question}\n\nנתונים:\n${summary}`}]})
   });
   if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.error?.message||`HTTP ${res.status}`);}
